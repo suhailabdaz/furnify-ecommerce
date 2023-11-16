@@ -7,43 +7,260 @@
     <title>Login</title>
 </head>
 <body>
+    <style>
+        body {
+            background-color: #FAF9F6;
+        }
 
-    <div class="container">
-        <div class="row justify-content-center mt-5">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">Login</div>
-                    <div class="card-body">
-                        <form action="/loginaction" method="post">
-                            <div class="form-group">
-                                <label for="email">Email</label>
-                                <input type="email" class="form-control" id="email" name="email"required>
-                                <% if(locals.emailerror){%>
-									<div class="alter text-danger text-start"><%= emailerror%></div>
-					
-								<%}%>
-                            </div>
+        .toggle-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .toggle-label {
+            margin-right: 10px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px #2196F3;
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+        .pclass {
+            font-size: clamp(1.25rem, 1.16rem + .39vw, 1.625rem);
+            font-weight: 400;
+            letter-spacing: normal;
+            line-height: 1.5;
+            margin-bottom: 2rem;
+        }
+
+        .toplogin {
+            font-size: clamp(1.625rem, 1.52rem + .45vw, 2.0625rem);
+            font-weight: 500;
+            letter-spacing: -.01em;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            color: #000; /* Text color is changed to black for better visibility */
+        }
+
+        .heading {
+            color: #000; /* Change text color to black */
+            padding-left: 20px;
+        }
+
+        .card {
+            background-color: #FAF9F6;
+            border-color: #FAF9F6;
+        }
+
+        .card-body {
+            margin-top: 1px;
+        }
+
+        .fuul {
+            margin-top: 1cm;
+            margin-right: 1cm;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center; /* Center the buttons horizontally */
+            align-items: center; /* Center the buttons vertically */
+            height: 16vh;/* Make the container full height */
+            
+        }
+
+        .button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none; /* Remove border for the capsule effect */
+            border-radius: 30px; /* Adjust the border-radius for a capsule shape */
+            margin: 0 10px; /* Add margin between the buttons */
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .signup-button {
+            background-color: #5a4f31;
+            color: #000; /* Change text color to black for better visibility */
+        
+        }
+
+        .login-button {
+            background-color: #747065;
+            color: #FAF9F6;
+        }
+        .frm .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .frm label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .frm .form-control {
+            display: block;
+            width: 100%;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #000000;
+            background-color: #FAF9F6;
+    
+            border-top: #000;
+            border-left: #000;
+            border-right: #000;
+            border-radius: 0.25rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        .frm .form-control:focus {
+            border-color: #FAF9F6;
+            outline: 0;
+        }
+
+        .frm .btn-primary {
+            margin-top: 10px;
+            color: #fff;
+            width: 100%;
+            background-color: #000000;
+            border-color: #000000;
+            border-radius: 100px;
+            height: 7vh;
+
+        }
+
+        .frm .btn-primary:hover {
+            background-color: #ffffff;
+            border-color: #000000;
+            color: #000;
+        }
+
+        /* Highlight the login button when on the login page */
+        body.login .login-button,
+        body.signup .signup-button {
+            background-color: #FAF9F6;
+            color: #000; /* Change text color to black for better visibility */
+        }
+        .fpw{
+            color: #000;
+        }
+    </style>
+    <div class="container mt-1">
+        <div class="fuul">
+            <div class="row d-flex justify-content-end mt-5">
+                <div class="col-md-6">
+                    <div class="card mt-2">
+                        <div class="toggle-container">
+                            <label class="toggle-label">Login</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle">
+                                <span class="slider"></span>
+                            </label>
+                            <label class="toggle-label">Signup</label>
+                        </div>
+
+                        <div class="heading">
+                            <div class="toplogin"><h2>Login to your account<h2>
+                            <p class="pclass">For faster checkout, managing orders and account-only exclusives.<p>
+                        </div>
+                        </div>
+                        <div class="card-body">
+                            <form class="frm" action="/loginaction" method="post">
+                                <div class="form-group">
+                                    <input type="email" class="form-control" id="email" name="email" required
+                                        placeholder="Your E-mail Address">
+                                    <% if(locals.emailerror){%>
+                                        <div class="alter text-danger text-start"><%= emailerror%></div>
+                                    <%}%>
+                                </div>
+
+                                <div class="form-group">
+                                    <input type="password" class="form-control" id="password" name="password" required
+                                        placeholder="Enter your Password">
+                                    <% if(locals.passworderror){%>
+                                        <div class="alter text-danger text-start"><%= passworderror%></div>
+                                    <%}%>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Login</button><br><br>
+                            </form>
+                            <a href="/forgotpassword" class="fpw d-flex justify-content-center">Forgot password..</a><br>
                             
-
-
-                            <div class="form-group">
-                                <label for="password">Password</label>
-                                <input type="password" class="form-control" id="password" name="password"required>
-                                <% if(locals.passworderror){%>
-									<div class="alter text-danger text-start"><%= passworderror%></div>
-					
-								<%}%>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Login</button><br><br>
-                        </form>
-                        <a href="/signup" class="mt-5">Create an account..</a><br>
-                        <a href="/forgotpassword" class="mt-5">Forgot password..</a><br>
-                        <a href="/" class="mt-5">back..</a>
-                        <!-- {{!-- <span><p style="margin-left: 5px; color: rgb(227, 11, 11);">{{passerror}}</p></span> --}} -->
-
-
+                        </div>
                     </div>
                 </div>
-             </div>
+            </div>
         </div>
     </div>
+</body>
+
+</html>
+    <script>
+        const toggleSwitch = document.getElementById('toggle');
+        const signupLink = document.getElementById('signupLink');
+        const loginLink = document.getElementById('loginLink');
+    
+        toggleSwitch.addEventListener('change', () => {
+            if (toggleSwitch.checked) {
+                // Show login, hide signup
+                signupLink.style.display = 'none';
+                loginLink.style.display = 'inline-block';
+                console.log('Switched to Login');
+            } else {
+                // Show signup, hide login
+                signupLink.style.display = 'inline-block';
+                loginLink.style.display = 'none';
+                console.log('Switched to Signup');
+            }
+        });
+    </script>
+    <a id="signupLink" href="/signup">Signup</a>
+<a id="loginLink" href="#login" style="display: none;">Login</a>
+

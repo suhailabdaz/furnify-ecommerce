@@ -114,6 +114,11 @@ a {
     font-weight: 700;
     color: #ffffff;
     margin-bottom: 30px; }
+  .hero.h2{
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 2px;
+    }
     @media (min-width: 1400px) {
       .hero h1 {
         font-size: 54px; } }
@@ -314,11 +319,11 @@ a {
 .we-help-section {
   padding: 7rem 0; }
   .we-help-section .imgs-grid {
-    display: -ms-grid;
     display: grid;
-    -ms-grid-columns: (1fr)[27];
     grid-template-columns: repeat(27, 1fr);
-    position: relative; }
+    position: relative;
+}
+
     .we-help-section .imgs-grid:before {
       position: absolute;
       content: "";

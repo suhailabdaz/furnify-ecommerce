@@ -3,6 +3,8 @@ const bcrypt=require("bcrypt")
 const nodemailer = require('nodemailer');
 const usersModel=require("../model/user_model")
 const userotp = require('../model/user_otp_model')
+const categoryModel=require('../model/category_model')
+const productModel=require('../model/product_model')
 
 const {nameValid,
     emailValid,
@@ -16,17 +18,88 @@ console.log(Email,pass)
 
 
 
-const home=async(req,res)=>{
-    res.render("users/index")
-}
+const home = async (req, res) => {
+    try {
+        // Assuming your categoryModel has a method like getAllCategories
+        const categories = await categoryModel.find();
 
-const shop=async(req,res)=>{
-    res.render("users/shop")
+        res.render("users/index", { categories });
+    } catch (error) {
+        // Handle error appropriately, e.g., log it or send an error response
+        console.error("Error fetching categories:", error);
+        res.status(500).send("Internal Server Error");
+    }
+};
+const shop = async (req, res) => {
+    const category = req.query.category;
+  
+    // Fetch products based on the selected category
+    const products = await productModel.find({$and:[{category},{status:true}] }).exec();
+    const categories = await categoryModel.find();
+    const ctCategory = categories.find(cat => cat._id.toString() === category);
+
+  // Extract the name of the selected category
+  const categoryName =ctCategory ? ctCategory.name : null;
+
+ 
+
+    
+    // Render the shop page with the filtered products
+    res.render("users/shop", { categoryName,categories,products, selectedCategory: category });
+  };
+  
+  const singleproduct=async(req,res)=>{
+    try{
+        const id=req.params.id
+        const product=await productModel.findOne({_id:id}) 
+        const categories = await categoryModel.find();
+        product.images = product.images.map(image => image.replace(/\\/g, '/'));
+        console.log('Image Path:', product.images[0]);
+        res.render('users/singleproduct',{categories,product:product})
+            
+    }
+    catch(err){
+        console.log("Shopping Page Error:",err);
+        res.status(500).send('Internal Server Error');
+    }
+
 }
 
 const profile=async(req,res)=>{
-    res.render("users/login")
+    try {
+        if(req.session.isAuth){
+            const categories = await categoryModel.find();
+            const name=req.session.username
+            res.render("users/profile", { categories,name});
+            
+
+        }
+        else{
+            res.render("users/login");
+        }
+
+
+    } catch (error) {
+        // Handle error appropriately, e.g., log it or send an error response
+        console.error("Error fetching categories:", error);
+        res.status(500).send("Internal Server Error");
+    }
 }
+
+const logout= async(req, res) => {
+    try {
+        req.session.userId=null
+        req.session.isAuth=false
+        req.session.destroy()
+        res.redirect("/")
+
+        }
+    catch (error) {
+        // Handle error appropriately, e.g., log it or send an error response
+        console.error("Error fetching categories:", error);
+        res.status(500).send("Internal Server Error");
+    }
+};
 
 const signup=async(req,res)=>{
     res.render("users/signup")
@@ -100,12 +173,25 @@ const signupotp = async (req, res) => {
             const hashedpassword = await bcrypt.hash(password, 10)
             const user = new usersModel({ username:username, email: email, mobileNumber: phone, password: hashedpassword })
             req.session.user = user
+            req.session.signup = true
+            req.session.forgot = false
 
             const otp = generateotp()
             console.log(otp);
             const currentTimestamp = Date.now();
             const expiryTimestamp = currentTimestamp + 30 * 1000;
-            await userotp.create({ email: email, otp: otp, expiry: new Date(expiryTimestamp) })
+            const filter = { email: email };
+            const update = {
+            $set: {
+            email: email,
+            otp: otp,
+            expiry: new Date(expiryTimestamp),
+            }
+            };
+
+const options = { upsert: true };
+
+await otpModel.updateOne(filter, update, options);
 
             await sendmail(email, otp)
             res.redirect('/otp')
@@ -144,12 +230,15 @@ const verifyotp = async (req, res) => {
         console.log(otp);
         if (enteredotp == otp && expiry.getTime() >= Date.now()) {
 
-
+            user.isVerified = true;
             try {
-                // if(req.session.signup)
+                if(req.session.signup){
                 await usersModel.create(user)
                 res.redirect('/')
-                
+                }
+                else if(req.session.forgot){
+                    res.redirect('/newpassword')
+                }
             }
             catch (error) {
                 console.error(error);
@@ -171,7 +260,7 @@ const resendotp=async(req,res)=>{
     try{
     const email = req.session.user.email
     const otp = generateotp()
-     console.log(otp);
+    console.log(otp);
 
      const currentTimestamp = Date.now();
      const expiryTimestamp = currentTimestamp + 60 * 1000;
@@ -186,27 +275,33 @@ const resendotp=async(req,res)=>{
 
 }
 
-const loginaction=async(req,res)=> {
-    try{
-        const email=req.body.email
-        const user=await usersModel.findOne({email:email})
-        const passwordmatch=await bcrypt.compare(req.body.password,user.password)
-        if(passwordmatch){
+const loginaction = async (req, res) => {
+    try {
+        const email = req.body.email;
+        const user = await usersModel.findOne({ email: email });
+
+        // Check if the user exists
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        const passwordmatch = await bcrypt.compare(req.body.password, user.password);
+
+        if (passwordmatch && !user.status) {
+            // Authentication successful
+            req.session.userId = user._id;
+            req.session.username = user.username;
             req.session.isAuth = true;
             res.redirect('/');
+        } else {
+            // Authentication failed
+            res.render("users/login.ejs", { passworderror: "Invalid password or you're BLOCKED" });
         }
-        else{
-            // req.flash('passworderror','invalid password')
-            // res.redirect('/login')
-            res.render("users/login.ejs",{passworderror:"Invalid-password"} )
-        }
+    } catch (error) {
+        // Error occurred, could be due to user not found or other issues
+        res.render("users/login.ejs", { emailerror: "Invalid email" });
     }
-    catch{
-        // req.flash('emailerror','invalid e-mail')
-        // res.redirect('/login')
-        res.render("users/login.ejs",{emailerror:"Invalid-email"})
-    }
-}
+};
 
 const forgotpassword=async (req, res) => {
     try {
@@ -222,23 +317,35 @@ const forgotpasspost=async (req, res) => {
     try {
         const email=req.body.email
         const emailexist= await usersModel.findOne({email:email})
-        req.session.id=emailexist._id
+        // req.session.id=emailexist._id
         console.log(emailexist);
         if(emailexist){
             req.session.forgot=true
             req.session.signup=false
             req.session.user = { email: email };
-            const otp = otpgenerator()
+            const otp = generateotp()
             console.log(otp);
             const currentTimestamp = Date.now();
             const expiryTimestamp = currentTimestamp + 60 * 1000;
-            await otpModel.create({ email: email, otp: otp, expiry: new Date(expiryTimestamp) })
+            const filter = { email: email };
+            const update = {
+              $set: {
+                email: email,
+                otp: otp,
+                expiry: new Date(expiryTimestamp),
+              }
+            };
+            
+            const options = { upsert: true };
+            
+            await otpModel.updateOne(filter, update, options);
+            
 
             await sendmail(email, otp)
             res.redirect('/otp')
         }
         else{
-           res.render('users/forgotpass.ejs',{email:"E-Mail Not Exist"})
+           res.render('users/forgotpass.ejs',{emaile:"E-Mail Not Exist"})
         }
     }
     catch(err) {
@@ -248,7 +355,9 @@ const forgotpasspost=async (req, res) => {
     }
 }
 
-const newpassword = async (req, res) => {
+
+
+const new_password = async (req, res) => {
     try {
         res.render('users/newpassword.ejs')
     }
@@ -258,7 +367,7 @@ const newpassword = async (req, res) => {
     }
 }
 
-const resetpassword = async (req, res) => {
+const reset_password = async (req, res) => {
     try {
         const password = req.body.newPassword
         const cpassword = req.body.confirmPassword
@@ -267,16 +376,16 @@ const resetpassword = async (req, res) => {
         const iscpasswordValid = confirmpasswordValid(cpassword, password)
 
          if (!ispasswordValid) {
-            res.render('user/newpaasword', { perror: "Password should contain one uppercase,one lowercase,one number,one special charecter" })
+            res.render('users/newpassword', { perror: "Password should contain one uppercase,one lowercase,one number,one special charecter" })
         }
         else if (!iscpasswordValid) {
-            res.render('user/newpassword', { cperror: "Password and Confirm password should be match" })
+            res.render('users/newpassword', { cperror: "Password and Confirm password should be match" })
         }
         else{
             const hashedpassword = await bcrypt.hash(password, 10)
             const email = req.session.user.email;
             await usersModel.updateOne({email:email},{password:hashedpassword})
-            res.redirect('/login')
+            res.redirect('/profile')
 
         }
     }
@@ -288,4 +397,5 @@ const resetpassword = async (req, res) => {
 
 
 
-module.exports={home,shop,profile,signup,generateotp,signupotp,otp,verifyotp,loginaction,resendotp,forgotpassword}
+module.exports={home,shop,profile,signup,generateotp,signupotp,otp,verifyotp,loginaction,resendotp,forgotpassword
+,forgotpasspost,new_password,reset_password,singleproduct,logout}

@@ -15,6 +15,41 @@
 
   <meta name="description" content="" />
   <meta name="keywords" content="bootstrap, bootstrap4" />
+  <style>
+    .category-options {
+      display: none;
+    }
+    .search-bar {
+      background-color: #3b5d50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 35px;
+      margin: 0;
+      display: flex;
+      border: 2px solid #efeeee;
+      border-radius: 30px;
+      overflow: hidden;
+    }
+
+    .search-input {
+      border: none;
+      padding: 10px;
+      width: 800px;
+      background-color: #3b5d50;
+      color: white;
+    }
+
+    .search-button {
+      background-color: #3d5d50;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-top-right-radius: 20px;
+      border-bottom-right-radius: 20px;
+      cursor: pointer;
+    }
+  </style>
 
 		<!-- Bootstrap CSS -->
 		<link href="css/bootstrap.min.css" rel="stylesheet">
@@ -30,32 +65,49 @@
 		<nav class="custom-navbar navbar navbar navbar-expand-md navbar-dark bg-dark" arial-label="Furni navigation bar">
 
 			<div class="container">
-				<a class="navbar-brand" href="index.html">Furni<span>.</span></a>
+				<a class="navbar-brand" href="/">Furnify<span>.</span></a>
 
 				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsFurni" aria-controls="navbarsFurni" aria-expanded="false" aria-label="Toggle navigation">
 					<span class="navbar-toggler-icon"></span>
 				</button>
 
 				<div class="collapse navbar-collapse" id="navbarsFurni">
-					<ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
+					<!-- <ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
 						<li class="nav-item active">
 							<a class="nav-link" href="index.html">Home</a>
 						</li>
 						<li><a class="nav-link" href="/shop">Shop</a></li>
-						<li><a class="nav-link" href="about.html">About us</a></li>
-						<li><a class="nav-link" href="services.html">Services</a></li>
-						<li><a class="nav-link" href="blog.html">Blog</a></li>
 						<li><a class="nav-link" href="contact.html">Contact us</a></li>
-					</ul>
+					</ul> -->
+				<div class="search-bar">
+						<input type="text" class="search-input" placeholder="Search...">
+						<button class="search-button"><img src="images/searcharrow.png"></button>
+					  </div>
 
 					<ul class="custom-navbar-cta navbar-nav mb-2 mb-md-0 ms-5">
+						<li><a class="nav-link" href="/"><img src="images/homesvg.svg"></a></li>
 						<li><a class="nav-link" href="/profile"><img src="images/user.svg"></a></li>
-						<li><a class="nav-link" href="cart.html"><img src="images/cart.svg"></a></li>
+						<li><a class="nav-link" href="/cartpage"><img src="images/cart.svg"></a></li>
 					</ul>
 				</div>
 			</div>
+			
+           
 				
 		</nav>
+		<div class="select-line" style="background-color: #3b5d50;">
+			<ul class="custom-horizontal-list navbar-nav ms-auto mb-2 mb-md-0" style="display: flex; list-style: none; flex-direction: row; justify-content: center; gap: 23px;">
+				<% categories.filter(category => category.status !== false).forEach(category => { %>
+					<li class="nav-item">
+					  <a class="nav-link" href="/shop?category=<%= category._id %>" style="color: #F0EAD6; font-size: 150%;">
+						<%= category.name %>
+					  </a>
+					</li>
+				  <% }); %>
+				  
+			</ul>
+		</div>
+		
 		<!-- End Header/Navigation -->
 
 		<!-- Start Hero Section -->
@@ -465,7 +517,7 @@
 
 				<div class="row g-5 mb-5">
 					<div class="col-lg-4">
-						<div class="mb-4 footer-logo-wrap"><a href="#" class="footer-logo">Furni<span>.</span></a></div>
+						<div class="mb-4 footer-logo-wrap"><a href="#" class="footer-logo">Furnify<span>.</span></a></div>
 						<p class="mb-4">Donec facilisis quam ut purus rutrum lobortis. Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate velit imperdiet dolor tempor tristique. Pellentesque habitant</p>
 
 						<ul class="list-unstyled custom-social">
@@ -541,6 +593,7 @@
 		<script src="js/bootstrap.bundle.min.js"></script>
 		<script src="js/tiny-slider.js"></script>
 		<script src="js/custom.js"></script>
+		<script src="js/togglenav.js"></script>
 	</body>
 
 </html>

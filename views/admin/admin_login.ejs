@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Login</title>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Admin-Login</div>
+                    <div class="card-body">
+                        <form action="/admin/adminlogin" method="post">
+                            <div class="form-group">
+                                <label for="email">E-mail</label>
+                                <input type="text" class="form-control" id="email" name="email"required>
+                                <% if(locals.emailerror){%>
+									<div class="alter text-danger text-start"><%= emailerror%></div>
+					
+								<%}%>
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <input type="password" class="form-control" id="password" name="password"required>
+                                <% if(locals.passworderror){%>
+									<div class="alter text-danger text-start"><%= passworderror%></div>
+					
+								<%}%>
+                            </div>
+                            <button type="submit" class="btn btn-dark">Login</button>
+                        </form>
+                        <!-- <span><p style="margin-left: 5px; color: rgb(227, 11, 11);">{{passworderror}}</p></span> -->
+
+
+
+                    </div>
+                </div>
+             </div>
+        </div>
+    </div>
